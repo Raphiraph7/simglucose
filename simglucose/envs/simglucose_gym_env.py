@@ -340,7 +340,7 @@ class T1DSimEnvBolus(gym.Env):
         # add bolus injection
         
 
-        act = Action(basal=self, bolus=bolus)
+        act = Action(basal=basal, bolus=bolus)
 
         if self.reward_fun is None:
             cache = self.t1dsimenv.step(act)
