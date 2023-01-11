@@ -218,6 +218,7 @@ class T1DSimEnvBolus(gym.Env):
         self.CGM_hist = [0] * history_length
         self.CHO_hist = [0] * history_length
         self.insulin_hist = [0] * history_length
+        self.bolus_previous = 0
 
         # Default observation space
         self.observation_space = spaces.Dict(
@@ -244,9 +245,10 @@ class T1DSimEnvBolus(gym.Env):
     def _get_obs(self):
         cache = {"CGM": np.array(self.CGM_hist, dtype=np.float32)}
         if self.enable_meal:
-            cache["CHO"] =  np.array(self.CHO_hist, dtype=np.float32)
-        if self.enable_insulin_history:
-            cache["insulin"] =  np.array(self.insulin_hist, dtype=np.float32)
+            cache["CHO"] =  np.array(self.CHO_hist, dtype=np.float32) # TODO: history or just last value?
+        # if self.enable_insulin_history: # TODO: Do we need that?
+        #     cache["insulin"] =  np.array(self.insulin_hist, dtype=np.float32)
+        cache["IOB"] = self.IOB.astype(np.float32) # TODO: Don't know if this works
 
         return cache
  
@@ -314,6 +316,7 @@ class T1DSimEnvBolus(gym.Env):
         self.target = 140
 
         # Set params for bolus injection
+        self.IOB = 0
         if any(self.quest.Name.str.match(self.t1dsimenv.patient.name)):
             # Import params from patient questionnaire
             quest = self.quest[self.quest.Name.str.match(self.t1dsimenv.patient.name)]
@@ -334,11 +337,12 @@ class T1DSimEnvBolus(gym.Env):
 
         basal = self.basal_rate * 1.0
 
-        bolus_rate = np.array([self.CHO_hist[-1] / self.ICR, max((self.CGM_hist[-1] - self.target) / self.ISF, 0), 0])
+        # TODO: Bolus only != 0, if meal is given
+        # TODO: Calculate IOB
+        self.IOB = self.bolus_previous * max(0, 1 - (self.t1dsimenv.sensor.sample_time / ...)) # TODO: what is T_IOB?
+        bolus_rate = np.array([self.CHO_hist[-1] / self.ICR, max(0, (self.CGM_hist[-1] - self.target) / self.ISF), -self.IOB])
         bolus = np.dot(bolus_rate, action)
-        
-        # add bolus injection
-        
+        self.bolus_previous = bolus
 
         act = Action(basal=basal, bolus=bolus)
 
