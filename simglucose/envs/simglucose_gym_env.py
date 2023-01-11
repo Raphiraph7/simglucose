@@ -391,6 +391,7 @@ class T1DSimEnvBolus(gym.Env):
         or 'adult#001' to 'adult#010', or 'child#001' to 'child#010'
         or ['adolescent#001', 'adolescent#002', ...]
         '''
+        print('I love CHRIS!!!!!!!!!!!!!!!!!!!!')
         self.np_random = np.random.default_rng(seed=seed)
 
         self.quest = pd.read_csv(CONTROL_QUEST)
@@ -534,7 +535,7 @@ class T1DSimEnvBolus(gym.Env):
         basal = self.basal_rate * 1.0
 
         # add bolus injection
-
+        
 
         act = Action(basal=basal, bolus=bolus)
 
