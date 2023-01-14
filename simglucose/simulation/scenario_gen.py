@@ -24,7 +24,6 @@ class RandomScenario(Scenario):
         t_min = np.floor(t_sec / 60.0)
 
         if t_min in self.scenario['meal']['time']:
-            print(t_min, '---', self.scenario['meal']['time'])
             logger.info('Time for meal!')
             idx = self.scenario['meal']['time'].index(t_min)
             return Action(meal=self.scenario['meal']['amount'][idx])
@@ -32,26 +31,35 @@ class RandomScenario(Scenario):
             return Action(meal=0)
 
     def create_scenario(self):
+
+        time_intervall = 3 # minutes
+
         scenario = {'meal': {'time': [], 'amount': []}}
 
-        # Meals given in paper
+        # Meal information given in paper
         time_mu = np.array([7, 14, 21]) * 60
         time_sigma = np.array([30,  30, 30])
         amount_mu = [70, 110, 90]
         amount_sigma = [7, 11, 9]
+        time_meal_intake = 15
 
         for tbar, tsd, mbar, msd in zip(time_mu, time_sigma,
                                         amount_mu, amount_sigma):
 
-            tmeal = np.round(self.random_gen.normal(tbar, tsd))
+            time_meal = np.round(self.random_gen.normal(tbar, tsd))
             #     truncnorm.rvs(a=(tlb - tbar) / tsd,
             #                     b=(tub - tbar) / tsd,
             #                     loc=tbar,
             #                     scale=tsd,
             #                     random_state=self.random_gen))
-            scenario['meal']['time'].append(tmeal)
-            scenario['meal']['amount'].append(
-                max(round(self.random_gen.normal(mbar, msd)), 0))
+            amount_meal = max(round(self.random_gen.normal(mbar, msd)), 0)
+            td = 0
+            while td <= time_meal_intake:
+                scenario['meal']['time'].append(time_meal + td)
+                scenario['meal']['amount'].append(amount_meal/(time_meal_intake/time_intervall))
+                td += time_intervall
+            # scenario['meal']['time'].append(time_meal)
+            # scenario['meal']['amount'].append()
 
         return scenario
 
