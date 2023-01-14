@@ -334,6 +334,7 @@ class T1DSimEnvBolus(gym.Env):
         bolus = np.dot(bolus_factors, action)
         self.bolus_previous = bolus
         bolus /= self.t1dsimenv.sensor.sample_time
+        bolus = max(0, bolus)
 
         act = Action(basal=basal, bolus=bolus)
 
