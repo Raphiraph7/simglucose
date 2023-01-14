@@ -246,9 +246,9 @@ class T1DSimEnvBolus(gym.Env):
         cache = {"CGM": np.array(self.CGM_hist, dtype=np.float32)}
         if self.enable_meal:
             cache["CHO"] =  np.array(self.CHO_hist, dtype=np.float32) # TODO: history or just last value?
-        # if self.enable_insulin_history: # TODO: Do we need that?
-        #     cache["insulin"] =  np.array(self.insulin_hist, dtype=np.float32)
-        cache["IOB"] = self.IOB.astype(np.float32) # TODO: Don't know if this works
+        if self.enable_insulin_history: # TODO: Do we need that?
+            cache["insulin"] =  np.array(self.insulin_hist, dtype=np.float32)
+        # cache["IOB"] = np.array(self.IOB, dtype=np.float32) # TODO: Don't know if this works
 
         return cache
  
@@ -303,6 +303,7 @@ class T1DSimEnvBolus(gym.Env):
 
 
         # Set params for bolus injection
+        self.IOB = 0
         if any(self.quest.Name.str.match(self.t1dsimenv.patient.name)):
             # Import params from patient questionnaire
             quest = self.quest[self.quest.Name.str.match(self.t1dsimenv.patient.name)]
@@ -314,18 +315,6 @@ class T1DSimEnvBolus(gym.Env):
             self.ISF = 1 / 50
 
         self.target = 140
-
-        # Set params for bolus injection
-        self.IOB = 0
-        if any(self.quest.Name.str.match(self.t1dsimenv.patient.name)):
-            # Import params from patient questionnaire
-            quest = self.quest[self.quest.Name.str.match(self.t1dsimenv.patient.name)]
-            self.CR = quest.CR.values[0]
-            self.CF = quest.CF.values[0]
-        else:
-            # If no params are found, use default values
-            self.CR = 1 / 15
-            self.CF = 1 / 50
 
         observation = self._get_obs()
         info = self._get_info()
@@ -339,7 +328,8 @@ class T1DSimEnvBolus(gym.Env):
 
         # TODO: Bolus only != 0, if meal is given
         # TODO: Calculate IOB
-        self.IOB = self.bolus_previous * max(0, 1 - (self.t1dsimenv.sensor.sample_time / ...)) # TODO: what is T_IOB?
+        # self.IOB = self.bolus_previous * max(0, 1 - (self.t1dsimenv.sensor.sample_time / ...)) # TODO: what is T_IOB?
+        self.IOB = 0
         bolus_rate = np.array([self.CHO_hist[-1] / self.ICR, max(0, (self.CGM_hist[-1] - self.target) / self.ISF), -self.IOB])
         bolus = np.dot(bolus_rate, action)
         self.bolus_previous = bolus

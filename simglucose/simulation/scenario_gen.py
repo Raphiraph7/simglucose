@@ -24,6 +24,7 @@ class RandomScenario(Scenario):
         t_min = np.floor(t_sec / 60.0)
 
         if t_min in self.scenario['meal']['time']:
+            print(t_min, '---', self.scenario['meal']['time'])
             logger.info('Time for meal!')
             idx = self.scenario['meal']['time'].index(t_min)
             return Action(meal=self.scenario['meal']['amount'][idx])
@@ -33,9 +34,7 @@ class RandomScenario(Scenario):
     def create_scenario(self):
         scenario = {'meal': {'time': [], 'amount': []}}
 
-        # Probability of taking each meal
-        # [breakfast, snack1, lunch, snack2, dinner, snack3]
-        # prob = [0.95, 0.3, 0.95, 0.3, 0.95, 0.3]
+        # Meals given in paper
         time_mu = np.array([7, 14, 21]) * 60
         time_sigma = np.array([30,  30, 30])
         amount_mu = [70, 110, 90]
