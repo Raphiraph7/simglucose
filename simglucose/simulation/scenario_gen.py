@@ -38,23 +38,18 @@ class RandomScenario(Scenario):
 
         # Meal information given in paper
         time_mu = np.array([7, 14, 21]) * 60
-        time_sigma = np.array([30,  30, 30])
+        time_sd = np.array([30,  30, 30])
         amount_mu = [70, 110, 90]
-        amount_sigma = [7, 11, 9]
+        amount_sd = [7, 11, 9]
         time_meal_intake = 15
 
-        for tbar, tsd, mbar, msd in zip(time_mu, time_sigma,
-                                        amount_mu, amount_sigma):
+        for tm, ts, mm, ms in zip(time_mu, time_sd,
+                                        amount_mu, amount_sd):
 
-            time_meal = np.round(self.random_gen.normal(tbar, tsd))
-            #     truncnorm.rvs(a=(tlb - tbar) / tsd,
-            #                     b=(tub - tbar) / tsd,
-            #                     loc=tbar,
-            #                     scale=tsd,
-            #                     random_state=self.random_gen))
-            amount_meal = max(round(self.random_gen.normal(mbar, msd)), 0)
+            time_meal = np.round(self.random_gen.normal(tm, ts))
+            amount_meal = max(round(self.random_gen.normal(mm, ms)), 0)
             td = 0
-            while td <= time_meal_intake:
+            while td < time_meal_intake:
                 scenario['meal']['time'].append(time_meal + td)
                 scenario['meal']['amount'].append(amount_meal/(time_meal_intake/time_intervall))
                 td += time_intervall

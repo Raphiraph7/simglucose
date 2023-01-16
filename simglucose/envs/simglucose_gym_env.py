@@ -248,7 +248,6 @@ class T1DSimEnvBolus(gym.Env):
             cache["CHO"] =  np.array(self.CHO_hist, dtype=np.float32)
         if self.enable_insulin_history:
             cache["insulin"] =  np.array(self.insulin_hist, dtype=np.float32)
-        # cache["IOB"] = np.array(self.IOB, dtype=np.float32) # TODO: Don't know if this works
 
         return cache
  
@@ -330,9 +329,9 @@ class T1DSimEnvBolus(gym.Env):
         # TODO: Calculate IOB
         # self.IOB = self.bolus_previous * max(0, 1 - (self.t1dsimenv.sensor.sample_time / ...)) # TODO: what is T_IOB?
         self.IOB = 0
-        bolus_factors = np.array([self.CHO_hist[-1] / self.ICR, max(0, (self.CGM_hist[-1] - self.target) / self.ISF), -self.IOB])
+        bolus_factors = np.array([sum(self.CHO_hist) / self.ICR, max(0, (self.CGM_hist[-1] - self.target) / self.ISF), -self.IOB])
         bolus = np.dot(bolus_factors, action)
-        self.bolus_previous = bolus
+        # self.bolus_previous = bolus
         bolus /= self.t1dsimenv.sensor.sample_time
         bolus = max(0, bolus)
 
