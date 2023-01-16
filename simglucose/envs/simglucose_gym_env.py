@@ -302,7 +302,7 @@ class T1DSimEnvBolus(gym.Env):
         self.basal = self.t1dsimenv.patient._params['u2ss'] * self.t1dsimenv.patient._params['BW'] / 6000
 
         # Set params for bolus injection
-        self.IOB = 0
+        self.T_IOB = 3.5 # TODO: what is T_IOB?
         if any(self.quest.Name.str.match(self.t1dsimenv.patient.name)):
             # Import params from patient questionnaire
             quest = self.quest[self.quest.Name.str.match(self.t1dsimenv.patient.name)]
@@ -327,7 +327,7 @@ class T1DSimEnvBolus(gym.Env):
 
         # TODO: Bolus only != 0, if meal is given
         # TODO: Calculate IOB
-        # self.IOB = self.bolus_previous * max(0, 1 - (self.t1dsimenv.sensor.sample_time / ...)) # TODO: what is T_IOB?
+        # self.IOB = self.bolus_previous * max(0, 1 - (self.t1dsimenv.sensor.sample_time / self.T_IOB))
         self.IOB = 0
         bolus_factors = np.array([sum(self.CHO_hist) / self.ICR, max(0, (self.CGM_hist[-1] - self.target) / self.ISF), -self.IOB])
         bolus = np.dot(bolus_factors, action)
