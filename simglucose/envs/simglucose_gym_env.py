@@ -302,7 +302,6 @@ class T1DSimEnvBolus(gym.Env):
         self.basal = self.t1dsimenv.patient._params['u2ss'] * self.t1dsimenv.patient._params['BW'] / 6000
 
         # Set params for bolus injection
-        self.T_IOB = 3.5 # TODO: what is T_IOB?
         if any(self.quest.Name.str.match(self.t1dsimenv.patient.name)):
             # Import params from patient questionnaire
             quest = self.quest[self.quest.Name.str.match(self.t1dsimenv.patient.name)]
@@ -312,11 +311,14 @@ class T1DSimEnvBolus(gym.Env):
             # If no params are found, use default values
             self.ICR = 1 / 15
             self.ISF = 1 / 50
+        self.T_IOB = 5 # in hours
 
         self.target = 140
 
         observation = self._get_obs()
         info = self._get_info()
+
+        self.previous_bolus = (info['time'], 0)
 
         return observation, info
 
@@ -324,16 +326,24 @@ class T1DSimEnvBolus(gym.Env):
     def step(self, action):
 
         basal = self.basal
+        
+        if (action == np.zeros_like(self.action_space)).all():
+            bolus = 0
+        else:
+            # Clip action to [0.2, 2]
+            action = np.clip(action, self.action_space.low, self.action_space.high)
 
-        # TODO: Bolus only != 0, if meal is given
-        # TODO: Calculate IOB
-        # self.IOB = self.bolus_previous * max(0, 1 - (self.t1dsimenv.sensor.sample_time / self.T_IOB))
-        self.IOB = 0
-        bolus_factors = np.array([sum(self.CHO_hist) / self.ICR, max(0, (self.CGM_hist[-1] - self.target) / self.ISF), -self.IOB])
-        bolus = np.dot(bolus_factors, action)
-        # self.bolus_previous = bolus
-        bolus /= self.t1dsimenv.sensor.sample_time
-        bolus = max(0, bolus)
+            # Calculate IOB
+            dt = (self.t1dsimenv.current_time - self.previous_bolus[0]).total_seconds() / 3600
+            self.IOB = self.previous_bolus[1] * max(0, 1 - (dt / self.T_IOB))
+
+            # Calculate bolus
+            bolus_factors = np.array([sum(self.CHO_hist) / self.ICR, max(0, (self.CGM_hist[-1] - self.target) / self.ISF), -self.IOB])
+            bolus = np.dot(bolus_factors, action)
+            bolus /= self.t1dsimenv.sensor.sample_time
+            bolus = max(0, bolus)
+
+            self.previous_bolus = (self.t1dsimenv.current_time, bolus)
 
         act = Action(basal=basal, bolus=bolus)
 
