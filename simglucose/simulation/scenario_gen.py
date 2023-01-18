@@ -47,7 +47,7 @@ class RandomScenario(Scenario):
                                         amount_mu, amount_sd):
 
             time_meal = np.round(self.random_gen.normal(tm, ts))
-            amount_meal = max(round(self.random_gen.normal(mm, ms)), 0)
+            amount_meal = max(self.random_gen.normal(mm, ms), 0)
             td = 0
             while td < time_meal_intake:
                 scenario['meal']['time'].append(time_meal + td)

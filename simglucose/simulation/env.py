@@ -77,7 +77,7 @@ class T1DSimEnv(object):
         for _ in range(int(self.sample_time)):
             # Compute moving average as the sample measurements
             tmp_CHO, tmp_insulin, tmp_BG, tmp_CGM = self.mini_step(action)
-            CHO += tmp_CHO
+            CHO += tmp_CHO / self.sample_time
             insulin += tmp_insulin / self.sample_time
             BG += tmp_BG / self.sample_time
             CGM += tmp_CGM / self.sample_time
