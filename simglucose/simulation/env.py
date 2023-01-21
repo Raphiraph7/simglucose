@@ -100,8 +100,9 @@ class T1DSimEnv(object):
 
         # Compute reward, and decide whether game is over
         window_size = int(60 / self.sample_time)
-        BG_last_hour = self.CGM_hist[-window_size:]
-        reward = reward_fun(BG_last_hour)
+        #BG_last_hour = self.BG_hist[-window_size:]
+        #reward = reward_fun(BG_last_hour)
+        reward = reward_fun(BG)
         done = BG < 30 or BG > 300
         obs = Observation(CGM=CGM)
 
