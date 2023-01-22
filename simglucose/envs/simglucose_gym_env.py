@@ -339,7 +339,7 @@ class T1DSimEnvBolus(gym.Env):
 
             # Calculate bolus
             bolus_factors = np.array([sum(self.CHO_hist)*self.t1dsimenv.sensor.sample_time / self.ICR, (self.CGM_hist[-1] - self.target) / self.ISF, -self.IOB])
-            print(bolus_factors) # TODO: Remove in final version
+            # print(bolus_factors) # TODO: Remove in final version
             bolus = np.dot(bolus_factors, action)
             bolus /= self.t1dsimenv.sensor.sample_time
             bolus = max(0, bolus)
@@ -347,6 +347,7 @@ class T1DSimEnvBolus(gym.Env):
             self.previous_bolus = (self.t1dsimenv.current_time, bolus)
 
         act = Action(basal=basal, bolus=bolus)
+        
 
         if self.reward_fun is None:
             cache = self.t1dsimenv.step(act)
