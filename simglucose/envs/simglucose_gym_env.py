@@ -344,7 +344,6 @@ class T1DSimEnvBolus(gym.Env):
                 (self.CGM_hist[-1] - self.target) / self.ISF,
                 -self.IOB
             ])
-            # print(bolus_factors) # TODO: Remove in final version
             bolus = np.dot(bolus_factors, action)
             bolus /= self.t1dsimenv.sensor.sample_time
             bolus = max(0, bolus)
