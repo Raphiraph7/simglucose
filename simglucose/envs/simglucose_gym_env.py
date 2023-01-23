@@ -338,7 +338,12 @@ class T1DSimEnvBolus(gym.Env):
             self.IOB = self.previous_bolus[1] * max(0, 1 - (dt / self.T_IOB))
 
             # Calculate bolus
-            bolus_factors = np.array([sum(self.CHO_hist)*self.t1dsimenv.sensor.sample_time / self.ICR, (self.CGM_hist[-1] - self.target) / self.ISF, -self.IOB])
+            CHO_estimation_factor = np.random.uniform(0.7, 1.1)
+            bolus_factors = np.array([
+                CHO_estimation_factor*sum(self.CHO_hist)*self.t1dsimenv.sensor.sample_time / self.ICR, 
+                (self.CGM_hist[-1] - self.target) / self.ISF,
+                -self.IOB
+            ])
             # print(bolus_factors) # TODO: Remove in final version
             bolus = np.dot(bolus_factors, action)
             bolus /= self.t1dsimenv.sensor.sample_time
