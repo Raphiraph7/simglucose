@@ -238,7 +238,7 @@ class T1DSimEnvBolus(gym.Env):
             self.observation_space["insulin"] = spaces.Box(low=0,high=10000, shape=(history_length,))
 
         # Default action space
-        self.action_space = spaces.Box(low=0.2, high=2.0, shape=(3,))
+        self.action_space = spaces.Box(low=0.6, high=1.4, shape=(3,))
 
         # bolus is not implemented
 
@@ -330,7 +330,7 @@ class T1DSimEnvBolus(gym.Env):
         if (action == np.zeros_like(self.action_space)).all():
             bolus = 0
         else:
-            # Clip action to [0.2, 2]
+            # Clip action
             action = np.clip(action, self.action_space.low, self.action_space.high)
 
             # Calculate IOB
